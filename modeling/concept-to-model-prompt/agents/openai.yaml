@@ -1,0 +1,5 @@
+interface:
+  display_name: "Concept to Model Prompt"
+  short_description: "Create detailed mesh and texture prompts with ZIPs"
+  default_prompt: "Use $concept-to-model-prompt to create Thai and English Blender prompts for detailed mesh, materials and textures, without presentation staging, and package the named artifact ZIP."
+

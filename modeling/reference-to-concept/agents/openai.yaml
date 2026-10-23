@@ -1,0 +1,5 @@
+interface:
+  display_name: "Reference to Concept"
+  short_description: "Analyze mesh details, materials and concept sheets"
+  default_prompt: "Use $reference-to-concept to analyze my primary reference and create concept_sheet.png with detailed mesh features, material and texture plans, and a structured handoff."
+

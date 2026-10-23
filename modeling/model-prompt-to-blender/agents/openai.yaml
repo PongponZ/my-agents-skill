@@ -1,0 +1,4 @@
+interface:
+  display_name: "Model Prompt to Blender"
+  short_description: "Build and verify the Blender model from a prompt package"
+  default_prompt: "Use $model-prompt-to-blender on my prompt package folder. Build the editable Blender model with the gated detail review, materials, diagnostic images, checkpoints and verification.md in model_output."
