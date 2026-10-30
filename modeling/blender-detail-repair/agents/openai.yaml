@@ -1,4 +1,0 @@
-interface:
-  display_name: "Blender Detail Repair"
-  short_description: "Close-up compare and rebuild details to match the reference"
-  default_prompt: "Use $blender-detail-repair on my Blender model: compare the requested components with the reference crops, list the missing details, rebuild them parametrically, recheck and update verification.md."

@@ -9,30 +9,20 @@ Python 3.10+, standard library only. Run without arguments for an interactive me
   python install_skills.py chatgpt-desktop             # same local skills folder Codex uses (~/.agents/skills)
   python install_skills.py claude-app                  # dist/claude-app/<skill>.zip  -> upload in Customize > Skills
   python install_skills.py chatgpt-web                 # dist/chatgpt/<skill>.zip     -> upload in ChatGPT Skills
-  python install_skills.py blender                     # bl_*.py into Blender's user scripts/modules
-  python install_skills.py mcp                         # print Blender-MCP setup for every client
   python install_skills.py check                       # validate all skills (frontmatter, links)
-  python install_skills.py smoke                       # run the Blender smoke tests (needs Blender)
-  python install_skills.py all                         # claude-code + codex + blender + both zip sets
+  python install_skills.py all                         # claude-code + codex + both zip sets
 
-Common options: --skills a,b  --dest DIR  --dry-run  --no-backup  --uninstall  --blender PATH
-Installed copies are SELF-CONTAINED: skills that use the shared Blender library get their own copy
-of model-prompt-to-blender/scripts, references and assets, so each one also works on its own.
+Common options: --skills a,b  --dest DIR  --dry-run  --no-backup  --uninstall
 Existing installs are moved to ~/.skill_backups/<target>/ before being replaced.
 """
-import argparse, os, re, shutil, subprocess, sys, tempfile, time, zipfile, glob, platform
+import argparse, re, shutil, sys, tempfile, time, zipfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 SRC = HERE.parent                                  # share_skill/modeling
-SKILLS = ['reference-to-concept', 'concept-to-model-prompt', 'model-prompt-to-blender',
-          'blender-detail-repair', 'blender-model-verify']
-PROVIDER = 'model-prompt-to-blender'
-DEPENDENTS = {'blender-detail-repair', 'blender-model-verify'}
-VENDOR_DIRS = ('scripts', 'references', 'assets')
-BLENDER_MODULES = ('bl_build.py', 'bl_detail.py', 'bl_materials.py', 'bl_views.py', 'bl_check.py',
-                   'bl_symmetry.py', 'bl_images.py')
-IGNORE = shutil.ignore_patterns('__pycache__', '*.pyc', '_smoke_out', '*.blend1', '.DS_Store')
+SKILLS = ['reference-to-prompt', 'reference-to-concept', 'concept-to-model-prompt']
+BUNDLED_STAGES = {'reference-to-prompt': ('reference-to-concept', 'concept-to-model-prompt')}
+IGNORE = shutil.ignore_patterns('__pycache__', '*.pyc', '.DS_Store')
 HOME = Path.home()
 
 
@@ -72,7 +62,7 @@ def validate(skill_dir: Path):
 
 # ----------------------------------------------------------------------------- staging
 def stage(skills, tmp: Path):
-    """Copy skills into tmp; make dependents self-contained."""
+    """Copy skills and bundle the main workflow's stages for standalone use."""
     out = {}
     for s in skills:
         src = SRC / s
@@ -80,20 +70,16 @@ def stage(skills, tmp: Path):
             raise SystemExit('skill not found: %s' % src)
         dst = tmp / s
         shutil.copytree(src, dst, ignore=IGNORE)
-        if s in DEPENDENTS:
-            prov = SRC / PROVIDER
-            for d in VENDOR_DIRS:
-                if (prov / d).is_dir():
-                    shutil.copytree(prov / d, dst / d, ignore=IGNORE, dirs_exist_ok=True)
-            md = dst / 'SKILL.md'
-            t = md.read_text(encoding='utf-8')
-            t = t.replace('../%s/' % PROVIDER, '')
-            t = t.replace('Uses the scripts and references of the sibling skill `%s`; install both side by side.' % PROVIDER,
-                          'Shared files from `%s` are bundled in this folder.' % PROVIDER)
-            t = t.replace('Uses `scripts/`; install both side by side.', 'Shared files from `%s` are bundled in this folder.' % PROVIDER)
-            md.write_text(t, encoding='utf-8')
-            (dst / 'VENDORED.txt').write_text('scripts/, references/, assets/ copied from %s at %s\n'
-                                              % (PROVIDER, time.strftime('%Y-%m-%d %H:%M')), encoding='utf-8')
+        for dependency in BUNDLED_STAGES.get(s, ()):
+            bundled = dst / 'workflows' / dependency
+            shutil.copytree(SRC / dependency, bundled, ignore=IGNORE)
+            errors = validate(bundled)
+            if errors:
+                raise SystemExit('validation failed for bundled %s:\n  ' % dependency + '\n  '.join(errors))
+            main_md = dst / 'SKILL.md'
+            content = main_md.read_text(encoding='utf-8')
+            content = content.replace('../%s/' % dependency, 'workflows/%s/' % dependency)
+            main_md.write_text(content, encoding='utf-8')
         errs = validate(dst)
         if errs:
             raise SystemExit('validation failed for %s:\n  ' % s + '\n  '.join(errs))
@@ -140,122 +126,33 @@ def zip_skills(staged, out_dir: Path, args):
         log('  %s (%d files)' % (z, len(names)))
 
 
-def blender_module_dirs(args):
-    if args.blender_modules:
-        return [Path(args.blender_modules)]
-    sysname = platform.system()
-    if sysname == 'Windows':
-        base = Path(os.environ.get('APPDATA', HOME / 'AppData/Roaming')) / 'Blender Foundation' / 'Blender'
-    elif sysname == 'Darwin':
-        base = HOME / 'Library/Application Support/Blender'
-    else:
-        base = HOME / '.config/blender'
-    vers = [args.blender_version] if args.blender_version else sorted(
-        p.name for p in base.glob('*') if p.is_dir() and re.fullmatch(r'\d+\.\d+', p.name))
-    if not vers:
-        raise SystemExit('No Blender user folder found under %s. Start Blender once or pass --blender-version X.Y' % base)
-    return [base / v / 'scripts' / 'modules' for v in vers]
-
-
-def install_blender_modules(args):
-    srcdir = SRC / PROVIDER / 'scripts'
-    for d in blender_module_dirs(args):
-        if args.dry_run:
-            log('[dry-run] modules -> %s' % d)
-            continue
-        d.mkdir(parents=True, exist_ok=True)
-        for m in BLENDER_MODULES:
-            t = d / m
-            if args.uninstall:
-                if t.exists():
-                    t.unlink()
-                continue
-            shutil.copy2(srcdir / m, t)
-        log('  %s %s' % ('removed modules from' if args.uninstall else 'modules ->', d))
-    if not args.uninstall:
-        log('  Inside Blender:  import bl_build as bl, bl_detail as dl  (no sys.path needed)')
-
-
-def find_blender(args):
-    if args.blender:
-        return args.blender
-    cands = []
-    if platform.system() == 'Windows':
-        cands = sorted(glob.glob(r'C:\Program Files\Blender Foundation\Blender *\blender.exe'), reverse=True)
-    elif platform.system() == 'Darwin':
-        cands = ['/Applications/Blender.app/Contents/MacOS/Blender']
-    w = shutil.which('blender')
-    if w:
-        cands.insert(0, w)
-    for c in cands:
-        if os.path.exists(c):
-            return c
-    raise SystemExit('Blender executable not found; pass --blender PATH')
-
-
-def smoke(args):
-    exe = find_blender(args)
-    tests = SRC / PROVIDER / 'scripts' / 'tests'
-    out = Path(tempfile.mkdtemp(prefix='oow_smoke_'))
-    ok = True
-    for t, needle in (('smoke_test.py', 'SMOKE_OK'), ('no_shell_test.py', 'NO_SHELL_OK')):
-        log('  running %s with %s ...' % (t, exe))
-        p = subprocess.run([exe, '-b', '--factory-startup', '--python', str(tests / t), '--', str(out)],
-                           capture_output=True, text=True, errors='replace')
-        lines = [l for l in p.stdout.splitlines() if needle in l or 'device' in l.lower() or 'Error' in l]
-        log('   ' + '\n   '.join(lines[-4:]))
-        ok &= any(needle in l for l in lines)
-    log('  smoke tests: %s  (outputs in %s)' % ('PASS' if ok else 'FAIL', out))
-    return ok
-
-
-MCP_HELP = r"""
-Blender side (once per machine)
-  1. Install uv (https://docs.astral.sh/uv/) so `uvx` is available.
-  2. Install/refresh the Blender add-on:   uvx mcp-for-blender install-addon
-  3. In Blender: Preferences > Add-ons > enable "Interface: Blender MCP", then Start MCP Server
-     (N-panel). Keep Blender open while the agent works.
-
-Client side (pick yours)
-  Claude Code (all projects):  claude mcp add --scope user blender -- uvx mcp-for-blender
-  Claude desktop app:          claude_desktop_config.json ->
-      {"mcpServers": {"blender": {"command": "uvx", "args": ["mcp-for-blender"]}}}
-  Codex CLI / ChatGPT desktop (Codex):  ~/.codex/config.toml ->
-      [mcp_servers.blender]
-      command = "uvx"
-      args = ["mcp-for-blender"]
-  ChatGPT web / claude.ai web: cannot reach a local stdio MCP server; use a desktop/CLI client for
-      the Blender stages (skills 3-5). Skills 1-2 (concept + prompt) work anywhere.
-"""
-
-
 def menu():
-    opts = ['claude-code', 'codex', 'chatgpt-desktop', 'claude-app', 'chatgpt-web', 'blender', 'mcp', 'check', 'smoke', 'all']
+    opts = ['claude-code', 'codex', 'chatgpt-desktop', 'claude-app', 'chatgpt-web', 'check', 'all']
     log('Modeling skills installer\n')
     for i, o in enumerate(opts, 1):
         log('  %d) %s' % (i, o))
-    sel = input('\nChoose (e.g. 1,6): ').strip()
+    sel = input('\nChoose (e.g. 1,2): ').strip()
     return [opts[int(x) - 1] for x in re.split(r'[,\s]+', sel) if x.isdigit() and 0 < int(x) <= len(opts)]
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('targets', nargs='*')
-    ap.add_argument('--skills', help='comma list (default: all five)')
+    ap.add_argument('--skills', help='comma list (default: main workflow and both stage skills)')
     ap.add_argument('--project', help='claude-code: install into PROJECT/.claude/skills')
     ap.add_argument('--dest', help='override destination folder (installs / zips)')
     ap.add_argument('--codex-legacy', action='store_true', help='codex: also install into ~/.codex/skills')
-    ap.add_argument('--blender', help='Blender executable for smoke')
-    ap.add_argument('--blender-version', help='blender: target X.Y user folder')
-    ap.add_argument('--blender-modules', help='blender: explicit modules folder')
     ap.add_argument('--dry-run', action='store_true')
     ap.add_argument('--no-backup', action='store_true')
     ap.add_argument('--uninstall', action='store_true')
     args = ap.parse_args()
     targets = args.targets or menu()
     if 'all' in targets:
-        targets = ['claude-code', 'codex', 'blender', 'claude-app', 'chatgpt-web']
+        targets = ['claude-code', 'codex', 'claude-app', 'chatgpt-web']
     skills = [s.strip() for s in args.skills.split(',')] if args.skills else SKILLS
+    unknown_skills = set(skills) - set(SKILLS)
+    if unknown_skills:
+        ap.error('unknown skills: ' + ', '.join(sorted(unknown_skills)))
     rc = 0
     with tempfile.TemporaryDirectory() as td:
         staged = None
@@ -288,12 +185,6 @@ def main():
             elif t == 'chatgpt-web':
                 zip_skills(staged, Path(args.dest) if args.dest else HERE / 'dist' / 'chatgpt', args)
                 log('  Upload each zip in ChatGPT > Skills (plan/admin must allow custom skills).')
-            elif t == 'blender':
-                install_blender_modules(args)
-            elif t == 'mcp':
-                log(MCP_HELP)
-            elif t == 'smoke':
-                rc |= not smoke(args)
             else:
                 log('  unknown target: %s' % t)
                 rc = 2

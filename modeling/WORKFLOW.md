@@ -1,83 +1,42 @@
 # Workflow
 
-ติดตั้งตาม [setup/SETUP.md](setup/SETUP.md) ก่อน ส่วนรายละเอียดของแต่ละ skill และไฟล์ที่ได้อยู่ใน [README.md](README.md)
+ติดตั้งตาม [setup/SETUP.md](setup/SETUP.md) รายละเอียดไฟล์ที่ได้อยู่ใน [README.md](README.md)
 
 ```text
-ภาพ ──① reference-to-concept──► concept ──② concept-to-model-prompt──► prompt package
-    ──③ model-prompt-to-blender──► โมเดล ──► ตรวจ ──④ blender-detail-repair──► ⑤ blender-model-verify
+reference-to-prompt คุมทั้ง workflow:
+ภาพ → reference-to-concept → concept → concept-to-model-prompt → prompt ZIP
 ```
 
-## ①–② Concept และ prompt
+## สร้าง concept และ prompt
 
 แนบภาพแล้วสั่ง:
 
 ```text
-ใช้ $reference-to-concept วิเคราะห์ภาพที่แนบ ชื่อชิ้นงาน: forest-lantern
+ใช้ $reference-to-prompt กับภาพที่แนบ ชื่อชิ้นงาน: forest-lantern
 ขาที่เป็นคู่ให้สมมาตร ตาอยู่กลางลำตัว
-ผ่าน QA แล้วใช้ $concept-to-model-prompt ต่อ แพ็กเป็น forest-lantern_artifact.zip
+ทำตาม workflow จนได้ forest-lantern_artifact.zip
 เก็บงานที่ <workdir>
 ```
 
-ตรวจก่อนไปขั้น ③:
+หากมี concept และรายละเอียดที่ตรวจแล้ว สั่ง `$concept-to-model-prompt` พร้อมระบุโฟลเดอร์งานได้โดยตรง
 
-- [ ] `concept_sheet.png` มีภาพขยายส่วนสำคัญ และอ่านรายละเอียดออก
-- [ ] ทุก feature ใน `details.md` มีจำนวน ขนาด ตำแหน่ง และบอกว่าเป็น mesh หรือ texture
-- [ ] ระบุชัดว่าอะไรสมมาตร อะไรต้องอยู่กลาง
-- [ ] ซ้าย-ขวาของภาพ ตัวแบบ และแกน X ตรงกัน
-- [ ] ตัวเลขใน prompt ไม่ขัดกับ concept
+main skill จะโหลดคำสั่งทีละ stage และไปขั้นถัดไปทันทีเมื่อ QA ผ่าน หากทำต่อจากงานเดิม ให้ระบุโฟลเดอร์นั้นกับ `$reference-to-prompt` เพื่อให้ตรวจไฟล์และเริ่มจากขั้นที่ยังไม่เสร็จ ความคืบหน้าเก็บใน `handoff.md` ของพื้นที่ทำงานและไม่ติด ZIP
 
-ไม่ผ่านข้อไหนให้แก้ที่ ①–② ก่อน แก้ prompt เร็วกว่าแก้โมเดล
+## ตรวจก่อนส่งมอบ
 
-## ③ สร้างโมเดล
+- [ ] `main_prompt.md` มีเป้าหมาย ขอบเขต ลำดับ part และ dependency ครบ
+- [ ] ภาพแรก `parts/00-overview/reference.png` เห็นตัวแบบเต็มในมุม FRONT, TOP, SIDE จริง และสเกล/ท่า/ทิศทางสอดคล้องกัน
+- [ ] หากต้นทางรวมหลายส่วน ภาพ reference ราย part เป็นภาพที่สร้างใหม่จากต้นทาง ไม่ใช่ภาพ crop หรือแผงที่ตัดจาก sheet
+- [ ] ทุก part มี `prompt.md` คู่กับภาพ reference ที่อ่านรายละเอียดออก พร้อมที่มาและแหล่งที่ใช้ตัดสินแต่ละส่วน
+- [ ] ทุก feature มีจำนวนหรือความไม่แน่นอน ขนาด ตำแหน่ง วิธีทำ mesh หรือ texture และเกณฑ์ตรวจ
+- [ ] ระบุชัดว่าอะไรสมมาตร อะไรต้องอยู่กลาง และซ้าย-ขวาของภาพ ตัวแบบ และแกนตรงกัน
+- [ ] ตัวเลขใน prompt ไม่ขัดกับ concept; ข้อมูลที่อนุมานหรือเลือกออกแบบระบุไว้
+- [ ] ทุกลิงก์ใช้ได้ภายใน ZIP โดยไม่ต้องเปิดเอกสารวิเคราะห์ภายนอก
 
-เปิด Blender กด Start MCP Server แล้วสั่ง:
+แก้ข้อที่ไม่ผ่านก่อนแพ็ก ZIP เอกสารวิเคราะห์และ QA เก็บไว้ในพื้นที่ทำงาน แต่ไม่ส่งซ้ำใน artifact
 
-```text
-ใช้ $model-prompt-to-blender กับ <workdir>/forest-lantern
-```
+## ส่งต่อ prompt package
 
-ลำดับงาน: preflight → blockout เทียบ silhouette → ต้นแบบชิ้นซ้ำและตรวจสมมาตร → รายละเอียด mesh เทียบ close-up → วัสดุ → เรนเดอร์ภาพตรวจและเขียน `verification.md`
+ส่ง `<name>_artifact.zip` ให้ผู้สร้างโมเดลหรือ agent ที่มีเครื่องมือสร้างโมเดล พร้อมระบุให้เริ่มจาก `main_prompt.md` ชุด skill นี้สิ้นสุดที่การส่งมอบ prompt package
 
-ผลอยู่ใน `model_output/` ภาพ hero ต้องสั่งเพิ่มเอง
-
-## ④ ตรวจและให้ feedback
-
-ดูตามลำดับ:
-
-1. ภาพ clay เทียบภาพอ้างอิง: มวล สัดส่วน ท่า
-2. ภาพ front และ top: สมมาตร ตำแหน่งกลาง
-3. ภาพ details และภาพเทียบ close-up
-4. `verification.md`: Gates, Feature coverage (`fail`, `not_verified`), Fidelity differences
-
-สั่งแก้ทีละ 1–2 เรื่อง บอกชิ้น ต่างอย่างไร และเทียบกับภาพไหน:
-
-```text
-ใช้ $blender-detail-repair: ขาทั้ง 4 ไม่สมมาตรเหมือน concept sheet
-ใช้ $blender-detail-repair: ขาเรียบไปเมื่อเทียบ reference เพิ่มแผ่นเกราะ รอยต่อ น็อต ข้อต่อ
-```
-
-## ⑤ ตรวจและเรนเดอร์ใหม่
-
-```text
-ใช้ $blender-model-verify กับ <workdir>/forest-lantern/model_output
-```
-
-skill ใช้ GPU ให้อัตโนมัติ ครั้งแรกที่ใช้ OptiX จะช้าราว 45 วินาที ถ้า MCP แจ้ง timeout ระหว่างเรนเดอร์ ไม่ใช่ error
-
-## ตัวอย่าง: orange-orb-walker
-
-โค้ดและรายงานอยู่ใน [model-prompt-to-blender/examples/orange-orb-walker/](model-prompt-to-blender/examples/orange-orb-walker/README.md)
-
-| รอบ | feedback | แก้ | ควรระบุไว้ใน prompt ตั้งแต่แรก |
-|---|---|---|---|
-| 1 | — | blockout, 13 แผง, วัสดุ | — |
-| 2 | ขาไม่สมมาตร ตาไม่อยู่กลางและไม่ลึก | ขาสมมาตร, ตาอยู่กลาง ลึก 0.09 | เจตนาสมมาตรและตำแหน่งกลาง |
-| 3 | ขาเรียบไป | เกราะมีสัน, รอยต่อ, น็อต, ข้อต่อ | เทียบ close-up กับ crop |
-| 4 | body ขาดรายละเอียด | 21 แผง, แผ่นซ้อน, ช่องมีกรอบ, หมุด | จำนวนแผงและรอยต่อเป็นตัวเลข |
-
-## ข้อควรรู้
-
-- ใส่ตัวเลข (จำนวน ขนาด ตำแหน่ง) แทนคำกว้าง ๆ อย่าง "small details"
-- ถ้าต้องการภาพ hero, rig หรือ export ให้บอกตั้งแต่แรก
-- `.blend` เก่าเก็บเป็น `.blend1` และ build script เวอร์ชันก่อนก็เก็บไว้ ย้อนกลับได้
-- ปัญหาที่พบบ่อยดูท้าย [README.md](README.md)
+main ให้ผู้รับงานอ่าน overview ก่อน แล้วโหลดเฉพาะ part ที่กำลังทำและ dependency ที่จำเป็น กลับมาอ่าน part เดิมเมื่อลงวัสดุหรือตรวจงาน และเก็บสถานะงานเพื่อกลับมาทำต่อหลัง context ถูกย่อ

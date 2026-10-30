@@ -1,4 +1,0 @@
-interface:
-  display_name: "Blender Model Verify"
-  short_description: "Check, render, reopen and report a Blender asset"
-  default_prompt: "Use $blender-model-verify on my Blender model: run topology and symmetry checks, render the diagnostic set, reopen the saved files in background, check the images and update verification.md."

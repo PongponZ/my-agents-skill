@@ -28,7 +28,11 @@ Turn a primary reference into a subject-neutral specification for detailed edita
 8. Select usable concept detail panels as binding design targets where appropriate, record their decisions and finalize feature design_source records. Extract and inspect source-pixel crops from the originals and selected concept panels under `detail_crops/`; map each required feature to its comparison crops. Finalize `details.md`, `concept_qa.md`, `handoff.md` and JSON. Approve only when sources, crops and selected decisions support required features without unresolved blockers. Selection does not make generated details observed facts. A nonorthographic panel is advisory only when labeled and not needed for tracing.
 9. Continue with `concept-to-model-prompt` only when the user requested the chain; otherwise return the sheet, readiness and file paths. This skill does not automatically build a 3D model.
 
-## Deliverables and blockers
+## Working evidence and handoff
+
+The files below are authoring evidence. When continuing to `concept-to-model-prompt`, distill them into `main_prompt.md` and `parts/<part-id>/prompt.md` with the needed reference images. Keep the analysis and generation history in the working project; do not include them in the final prompt ZIP or require the modeling executor to read them. Preserve feature IDs, source authority and selected decisions in the owning part prompts.
+
+The downstream prompt package requires a FRONT/TOP/SIDE overview as Image 1 and newly generated focused references when separating parts from a multi-part image. Analytical crops produced here remain working evidence; do not reuse those crops as the delivered part references.
 
 Required: `references/<original-images>`, declared `detail_crops/*.png`, `analysis.json`, `analysis.md`, `concept_sheet.png`, `concept_sheet_prompt.md`, `details.md`, `concept_qa.md`, `handoff.md`.
 

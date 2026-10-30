@@ -1,0 +1,4 @@
+interface:
+  display_name: "Reference to Prompt"
+  short_description: "Run reference to concept to compact prompt ZIP"
+  default_prompt: "Use $reference-to-prompt to run reference-to-concept and concept-to-model-prompt in sequence, delivering a compact prompt ZIP with a FRONT/TOP/SIDE overview and newly generated part references."

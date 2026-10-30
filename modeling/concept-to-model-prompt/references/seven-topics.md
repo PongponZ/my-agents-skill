@@ -1,6 +1,8 @@
 # Seven topics: detailed mesh, materials and textures
 
-Ground instructions in component/feature/material IDs. Lead with an affirmative inventory of what must be built; exclusions support that specification rather than replacing it. Every required feature needs its selected design source, detail_spec, construction plan, comparison crops and observable checks. Adapt vocabulary to the subject; do not impose mechanical parts on anatomy, cloth or architecture.
+Use these topics as an authoring checklist across the compact package. Main owns global scope, axes, pose, part order, phase gates and outputs; each part owns its reference authority, geometry, interfaces, materials and checks. Do not duplicate all seven sections in main and every part.
+
+Ground instructions in component/feature/material IDs. Lead with an affirmative inventory of what must be built; exclusions support that specification rather than replacing it. Every required feature needs its selected design source, detail_spec, construction plan, selected part reference images and observable checks. Adapt vocabulary to the subject; do not impose mechanical parts on anatomy, cloth or architecture.
 
 ## Scope preamble
 
@@ -30,9 +32,9 @@ Acceptance: compare neutral local dimensions, mirrored attachment coordinates, p
 
 ## 2. REFERENCE FIDELITY & DESIGN DECISIONS
 
-Rank source-specific identity features and state must-preserve, optional and allowed-simplification rules. Compare secondary contours as well as primary landmarks. Use source close-ups; distinguish viewpoint mismatch from geometry errors.
+Rank source-specific identity features and state must-preserve, optional and allowed-simplification rules. Compare secondary contours as well as primary landmarks. Use the newly generated focused part references, reviewed against the original evidence; distinguish viewpoint mismatch from geometry errors.
 
-Write an aspect-specific source table: primary for identity/clear observations, named selected concept panels for assigned fine details, and user/selected decisions for pose, symmetry, dimensions and hidden construction. Carry design_source records into the operational text. Concept details remain inferred/proposed but become binding design targets once selected; low-resolution primary imagery is not a reason to omit them. Resolve actual conflicts before execution.
+Write an aspect-specific source table: primary for identity/clear observations, reviewed standalone part references for assigned fine details, and user/selected decisions for pose, symmetry, dimensions and hidden construction. Carry design_source records into the operational text. Concept details remain inferred/proposed but become binding design targets once selected; low-resolution primary imagery is not a reason to omit them. Resolve actual conflicts before execution.
 
 Retain evidence labels independently of selected decisions. Preserve locked interpretations; uncertainty alone does not justify deleting selected hidden detail. Higher-priority contradictions require a recorded revision. Specify coherent unseen shapes rather than making everything flat/round.
 
@@ -70,7 +72,7 @@ Keep a full detailed surface stage after mesh gates pass. Map material IDs to fe
 
 Define needed channels and painting/procedural methods: base color, roughness, normal/bump, justified displacement, masks, patterns and supported wear/dirt. Specify location, scale, direction, coverage, intensity and boundary behavior. Do not invent scratches, metals or transparency. Shape-changing displacement requires geometry rechecks.
 
-Replace vague “restrained” treatment with region-specific targets, sample crops and justified scales/ranges or labeled design choices. Define the surface region when describing coverage percentages. For competing goals state which wins and how to check it, e.g. retain the selected emitter hue and readable rim before increasing brightness. Do not introduce an unconditional “brightest pixel” requirement or a presentation exposure loop.
+Replace vague “restrained” treatment with region-specific targets, focused reference images and justified scales/ranges or labeled design choices. Define the surface region when describing coverage percentages. For competing goals state which wins and how to check it, e.g. retain the selected emitter hue and readable rim before increasing brightness. Do not introduce an unconditional “brightest pixel” requirement or a presentation exposure loop.
 
 Choose UVs for directional patterns/export; procedural/local mapping can suit other assets. Check seams, stretching, texel density at inspection distance, repeat scale and stability under posing. Do not require a universal texture size or map set.
 
@@ -82,18 +84,18 @@ Acceptance: correct zones, supported detail/response, consistent scale, no missi
 
 ## 6. MODELING PROGRESSION
 
-Use two explicit phases within the seven-topic prompt. Detailed material work is Phase B and cannot displace unfinished Phase A features. Execute in this order:
+State two explicit phases in the main prompt. Detailed material work is Phase B and cannot displace unfinished Phase A features. Execute in this order, loading each part's details only when needed:
 
 ### Phase A — model and detail
 1. Inspect references, selected decisions, required features, existing scene and tools.
 2. Block out primary shapes; compare reference and useful orthographic views; correct proportions/pose.
 3. Build interfaces and a complete prototype for each complex repeated family. Validate the neutral symmetry construction and mount layout before posing or replication; recheck paired geometry after duplication.
 4. Complete required secondary/tertiary mesh features, then replicate with documented differences.
-5. Perform at least one complete detailed close-up review: save side-by-side selected crops versus neutral model images, list missing/wrong features, verify symmetry/topology and repair every required failure. Re-capture affected comparisons after repairs. First-pass success needs evidence but no artificial edit. Save the detailed mesh checkpoint only after the Phase A gate passes.
+5. Perform at least one complete detailed close-up review: save side-by-side selected part references versus neutral model images, list missing/wrong features, verify symmetry/topology and repair every required failure. Re-capture affected comparisons after repairs. First-pass success needs evidence but no artificial edit. Save the detailed mesh checkpoint only after the Phase A gate passes.
 
 ### Phase B — materials, textures and delivery
 
-6. Enter only after Phase A passes. Build detailed materials/textures and compare surface features against selected crops. Geometry-changing displacement or newly discovered mesh defects return to the affected Phase A gate.
+6. Enter only after Phase A passes. Build detailed materials/textures and compare surface features against selected part references. Geometry-changing displacement or newly discovered mesh defects return to the affected Phase A gate.
 7. Verify saved outputs/resources, record review rounds and per-feature results, and save the final editable asset. Delivery images remain diagnostic; no presentation scene or beauty-render phase.
 
 Save useful blockout/detailed/final checkpoints without per-stage human approval. A failed gate returns to its stage before advancement. Tool limitations yield partial/not_verified, never automatic pass. Avoid unchanged failed loops; preserve work and identify the blocker.
@@ -106,15 +108,15 @@ Use plain diagnostic overall views and close-ups: reference-match, front/side/re
 
 Capture actual viewport images; if unavailable use minimal low-cost diagnostic renders without staging/custom light rigs. Resolution must reveal the inspected feature. A tool close-up must resolve the tool, not show it tiny within a whole-subject shot. Unavailable visual checks are not_verified.
 
-Save side-by-side comparison sheets under comparisons/ (or an equivalent declared directory): selected crop next to an actual model close-up, with feature/crop IDs and source provenance. Use comparable orientation and on-image scale; add views for occluded features and label any diagnostic reposing. All required geometry and surface features must be inspectable across these sheets. A whole-model silhouette overlay cannot replace detail comparisons. Do not change geometry only for one camera. Preserve actual captures and source crops; never synthesize a model result.
+Save side-by-side comparison sheets under comparisons/ (or an equivalent declared directory): selected part reference next to an actual model close-up, with feature/part IDs and reference provenance. Use comparable orientation and on-image scale; add views for occluded features and label any diagnostic reposing. All required geometry and surface features must be inspectable across these sheets. A whole-model silhouette overlay cannot replace detail comparisons. Do not change geometry only for one camera. Preserve the reviewed reference images and actual model captures; generating reference images never permits synthesizing a model result.
 
-The verification report lists each review round, absent/incorrect features, fixes and recheck results. A source crop enlarges attention, not source resolution; do not certify detail that neither selected sources nor explicit design decisions define.
+The verification report lists each review round, absent/incorrect features, fixes and recheck results. Generated part references express reviewed design choices, not newly observed source facts; do not certify detail that neither selected references nor explicit design decisions define.
 
 Deliver editable .blend and useful checkpoints, used texture resources or packed images, diagnostic images and verification.md with paths, methods, coverage, mesh/topology/material gate statuses, inferences and issues. Include a symmetry comparison for applicable groups: members, plane/axis, neutral segment dimensions, mirrored mount/pivot deltas, tolerance, pose differences, explicit exceptions and pass/fail. Keep neutral construction checks separate from final posed views. Exports/rigs depend on explicit scope.
 
 Verify saves, image decoding and resource paths; reopen when supported and state limits. Required failures or unavailable required verification mean partial/needs_revision, not complete. Never replace missing model outputs with concept images.
 
-## Bilingual consistency
+## Package consistency
 
-Both prompts share the seven anchors, feature IDs, decisions, simplifications, material plans, scope and outputs. Translate the operational body fully. Review semantic parity; packaging checks cannot establish it.
+Use one operational language unless the user explicitly requests translations. Each required feature has one owning part and matching reference/checks. Main and part prompts must agree on scope, pose, shared interfaces and outputs; no instruction may require excluded authoring files.
 
